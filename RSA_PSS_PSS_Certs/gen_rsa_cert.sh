@@ -1,9 +1,17 @@
 #!/bin/bash
 
-openssl req -new -newkey rsa-pss -passout pass:123456 -sha256 -subj "/C=IN/ST=Kar/L=En/O=HTIPL/OU=VPP/CN=root/emailaddress=root@example.com" -keyout rootkey.pem -out rootreq.pem -config openssl.cnf
+openssl req -new -newkey rsa-pss -pkeyopt rsa_keygen_bits:2048 \
+    -sigopt rsa_padding_mode:pss -sigopt  rsa_mgf1_md:sha256 \
+    -passout pass:123456 -sha256 \
+    -subj "/C=IN/ST=Kar/L=En/O=HTIPL/OU=VPP/CN=root/emailaddress=root@example.com" \
+    -keyout rootkey.pem -out rootreq.pem -config openssl.cnf
 openssl x509 -req -in rootreq.pem -passin pass:123456 -sha256 -extfile openssl.cnf -days 14600 -extensions v3_ca -signkey rootkey.pem -out rootcert.pem 
 
-openssl req -new -newkey rsa-pss -passout pass:123456 -sha256 -subj "/C=IN/ST=Kar/L=En/O=HTIPL/OU=VPP/CN=serv/emailaddress=serverrsa@example.com" -keyout serv_key.pem -out serv_req.pem -config openssl.cnf
+openssl req -new -newkey rsa-pss -pkeyopt rsa_keygen_bits:2048 \
+    -sigopt rsa_padding_mode:pss -sigopt  rsa_mgf1_md:sha256 \
+    -passout pass:123456 -sha256 \
+    -subj "/C=IN/ST=Kar/L=En/O=HTIPL/OU=VPP/CN=serv/emailaddress=serverrsa@example.com" \
+    -keyout serv_key.pem -out serv_req.pem -config openssl.cnf
 openssl x509 -req -in serv_req.pem -passin pass:123456 -sha256 -extfile openssl.cnf -days 14600 -extensions usr_cert -CA rootcert.pem -CAkey rootkey.pem -CAcreateserial -out serv_cert.pem
 
 openssl x509 -inform PEM -in rootcert.pem -outform DER -out rootcert.der
